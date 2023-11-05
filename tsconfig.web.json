@@ -10,9 +10,7 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@renderer/*": [
-        "src/renderer/src/*"
-      ]
+      "@render/*": ["./src/renderer/src/*"]
     }
   }
 }
