@@ -2,7 +2,10 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 export interface IIpcApi {
-  onUpdateServerInfo: (callback: never) => void
+  pickOutput: () => void
+  requestOutputPath: () => void
+  requestEncryptFile: (password: string) => void
+  requestDecryptFile: (password: string, checksumInput: string, checksumOutput: string) => void
   requestServerInfo: () => void
   stopServer: () => void
   startServer: () => void
@@ -10,7 +13,11 @@ export interface IIpcApi {
 
 // Custom APIs for renderer
 const api: IIpcApi = {
-  onUpdateServerInfo: (callback: never) => ipcRenderer.on('S-server-info', callback),
+  pickOutput: () => ipcRenderer.send('C-pick-output'),
+  requestOutputPath: () => ipcRenderer.send('C-request-output'),
+  requestEncryptFile: (password: string) => ipcRenderer.send('C-encrypt-file', [password]),
+  requestDecryptFile: (password: string, checksumInput: string, checksumOutput: string) =>
+    ipcRenderer.send('C-decrypt-file', [password, checksumInput, checksumOutput]),
   requestServerInfo: () => ipcRenderer.send('C-server-info'),
   stopServer: () => ipcRenderer.send('C-server-stop'),
   startServer: () => ipcRenderer.send('C-server-start')

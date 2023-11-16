@@ -2,6 +2,8 @@ import express from 'express'
 import { Server } from 'http'
 import { AddressInfo } from 'net'
 import { BrowserWindow, ipcMain } from 'electron'
+import { FileHandler } from './file'
+import serveIndex from 'serve-index'
 
 export enum EServerStatus {
   RUNNING = 'Running',
@@ -22,7 +24,8 @@ export class WebServer {
 
   private configureServer = () => {
     this.buildRoutes()
-    this.buildListeners()
+    this.configureListeners()
+    this.updateServerDir()
   }
 
   startServer = () => {
@@ -38,7 +41,7 @@ export class WebServer {
     })
   }
 
-  private buildListeners = () => {
+  private configureListeners = () => {
     ipcMain.on('C-server-info', () => {
       BrowserWindow.getAllWindows().map((browserWindow) => {
         browserWindow.webContents.send('S-server-info', {
@@ -72,5 +75,13 @@ export class WebServer {
     if (this.server?.listening) {
       this.server.close()
     }
+  }
+
+  updateServerDir = () => {
+    this.expressApp.use(
+      '/files',
+      express.static(FileHandler.getInstance().getOutputDir()),
+      serveIndex(FileHandler.getInstance().getOutputDir(), { icons: true })
+    )
   }
 }

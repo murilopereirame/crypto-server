@@ -3,6 +3,7 @@ import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { WebServer } from './server'
+import { FileHandler } from './file'
 
 function createWindow(): void {
   // Create the browser window.
@@ -14,7 +15,8 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      nodeIntegration: true
     }
   })
 
@@ -51,6 +53,7 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 
+  FileHandler.getInstance().configureListeners()
   WebServer.getInstance().startServer()
 })
 
@@ -58,9 +61,13 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+  FileHandler.getInstance()
+    .removeTempDir()
+    .then(() => {
+      if (process.platform !== 'darwin') {
+        app.quit()
+      }
+    })
 })
 
 // In this file you can include the rest of your app"s specific main process

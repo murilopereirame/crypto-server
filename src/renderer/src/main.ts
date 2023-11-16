@@ -2,9 +2,15 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { createPinia } from 'pinia'
 import { useServerStore } from './stores/server'
+import { useFileStore } from "./stores/files";
+
+export const ipcRenderer = window.electron.ipcRenderer
 
 export interface IIpcApi {
-  onUpdateServerInfo: (callback: (_event: never, value: never) => void) => void
+  pickOutput: () => void
+  requestOutputPath: () => void
+  requestEncryptFile: (password: string) => void
+  requestDecryptFile: (password: string, checksumInput?: string, checksumOutput?: string) => void
   requestServerInfo: () => void
   stopServer: () => void
   startServer: () => void
@@ -17,7 +23,17 @@ const app = createApp(App)
 
 app.use(pinia)
 
-electronApi.onUpdateServerInfo((_event, value) => {
+ipcRenderer.on('S-output-change', (_event, value) => {
+  const fileStore = useFileStore()
+  fileStore.setOutputPath(value)
+})
+
+ipcRenderer.on('S-encrypt-result', (_event, value) => {
+  const fileStore = useFileStore()
+  fileStore.addFile(value)
+})
+
+ipcRenderer.on('S-server-info', (_event, value) => {
   const serverStore = useServerStore()
   serverStore.updateServerInfo(value)
 })
