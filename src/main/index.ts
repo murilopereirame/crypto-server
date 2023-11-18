@@ -5,6 +5,9 @@ import icon from '../../resources/icon.png?asset'
 import { WebServer } from './server'
 import { FileHandler } from './file'
 
+app.setName('Crypto Server')
+app.setAppUserModelId(app.name);
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
