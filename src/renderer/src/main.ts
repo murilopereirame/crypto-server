@@ -3,6 +3,7 @@ import App from './App.vue'
 import { createPinia } from 'pinia'
 import { useServerStore } from './stores/server'
 import { useFileStore } from "./stores/files";
+import { useProgressStore } from "./stores/progress";
 
 export const ipcRenderer = window.electron.ipcRenderer
 
@@ -36,6 +37,11 @@ ipcRenderer.on('S-encrypt-result', (_event, value) => {
 ipcRenderer.on('S-server-info', (_event, value) => {
   const serverStore = useServerStore()
   serverStore.updateServerInfo(value)
+})
+
+ipcRenderer.on('S-file-progress', (_event, value) => {
+  const progressStore = useProgressStore()
+  progressStore.updateProgress(value)
 })
 
 app.mount('#app')
