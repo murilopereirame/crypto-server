@@ -1,9 +1,12 @@
 import express from 'express'
+import https from 'https'
 import { Server } from 'http'
 import { AddressInfo } from 'net'
 import { BrowserWindow, ipcMain } from 'electron'
 import { FileHandler } from './file'
 import serveIndex from 'serve-index'
+import crypto from 'crypto'
+import forge from 'node-forge'
 
 export enum EServerStatus {
   RUNNING = 'Running',
@@ -13,6 +16,9 @@ export enum EServerStatus {
 
 export class WebServer {
   private static instance: WebServer | null
+  private publicKey = ''
+  private privateKey = ''
+  private cert = ''
   server: Server | null = null
   expressApp = express()
 
@@ -23,16 +29,53 @@ export class WebServer {
   }
 
   private configureServer = () => {
+    this.generateCertificate()
     this.buildRoutes()
     this.configureListeners()
     this.updateServerDir()
   }
 
+  private generateCertificate = () => {
+    forge.options.usePureJavaScript = true
+
+    const pki = forge.pki
+    const keys = pki.rsa.generateKeyPair()
+    const cert = pki.createCertificate()
+
+    cert.publicKey = keys.publicKey
+    cert.serialNumber = `${Math.abs(parseInt(crypto.randomBytes(20).toString('hex')), 16)}`
+    cert.validity.notBefore = new Date()
+    cert.validity.notAfter = new Date(2030, 0, 1)
+
+    const attrs = [
+      { name: 'commonName', value: 'localhost' },
+      { name: 'countryName', value: '' },
+      { shortName: 'ST', value: '' },
+      { name: 'localityName', value: '' },
+      { name: 'organizationName', value: '' },
+      { shortName: 'OU', value: '' }
+    ]
+    cert.setSubject(attrs)
+    cert.setIssuer(attrs)
+    cert.sign(keys.privateKey)
+
+    this.privateKey = pki.privateKeyToPem(keys.privateKey)
+    this.cert = pki.certificateToPem(cert)
+  }
+
   startServer = () => {
     this.configureServer()
-    this.server = this.expressApp.listen(0, () => {
-      console.log(`Server running on ${(this.server?.address() as AddressInfo)?.port}`)
-    })
+    this.server = https
+      .createServer(
+        {
+          key: this.privateKey,
+          cert: this.cert
+        },
+        this.expressApp
+      )
+      .listen(0, () => {
+        console.log(`Server running on ${(this.server?.address() as AddressInfo)?.port}`)
+      })
   }
 
   private buildRoutes = () => {
