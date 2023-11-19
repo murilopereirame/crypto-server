@@ -16,7 +16,6 @@ export enum EServerStatus {
 
 export class WebServer {
   private static instance: WebServer | null
-  private publicKey = ''
   private privateKey = ''
   private cert = ''
   server: Server | null = null
@@ -36,14 +35,12 @@ export class WebServer {
   }
 
   private generateCertificate = () => {
-    forge.options.usePureJavaScript = true
-
     const pki = forge.pki
     const keys = pki.rsa.generateKeyPair()
     const cert = pki.createCertificate()
 
     cert.publicKey = keys.publicKey
-    cert.serialNumber = `${Math.abs(parseInt(crypto.randomBytes(20).toString('hex')), 16)}`
+    cert.serialNumber = `${Math.abs(parseInt(crypto.randomBytes(20).toString('hex')))}`
     cert.validity.notBefore = new Date()
     cert.validity.notAfter = new Date(2030, 0, 1)
 
