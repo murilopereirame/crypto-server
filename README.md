@@ -1,10 +1,14 @@
-# crypto-server
+# Crypto Server
 
-An Electron application with Vue and TypeScript
+Get ride of sharing your files in a unsecure way!
 
-## Recommended IDE Setup
+### Motivation
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)
+Sharing files across the internet could be not so easy when the subject is security.
+Even with TLS, the risk of having files stolen/changed by some attack as Man-in-the-middle still real.
+
+This application aims a easy way to encrypt/decrypt files using the most strong AES, with 256 bits of encryption
+and using Argon2 to generate the password hashes with random salts.
 
 ## Project Setup
 
